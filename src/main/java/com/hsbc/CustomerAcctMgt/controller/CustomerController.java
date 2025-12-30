@@ -3,6 +3,7 @@ package com.hsbc.CustomerAcctMgt.controller;
 import com.hsbc.CustomerAcctMgt.requestDto.CreateCustomerRequest;
 import com.hsbc.CustomerAcctMgt.responseDto.CustomerResponseDto;
 import com.hsbc.CustomerAcctMgt.service.CustomerService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class CustomerController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CustomerResponseDto createCustomer(@RequestBody CreateCustomerRequest request) {
+    public CustomerResponseDto createCustomer(@Valid @RequestBody CreateCustomerRequest request) {
         return customerService.createCustomer(request);
     }
 
@@ -38,7 +39,7 @@ public class CustomerController {
     }
 
     @PutMapping("/{customerId}")
-    public CustomerResponseDto updateCustomer(@PathVariable Long customerId,@RequestBody CreateCustomerRequest request){
+    public CustomerResponseDto updateCustomer(@PathVariable Long customerId,@Valid @RequestBody CreateCustomerRequest request){
         return customerService.updateCustomer(customerId, request);
     }
 
