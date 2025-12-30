@@ -1,6 +1,8 @@
 package com.hsbc.CustomerAcctMgt.service;
 
 import com.hsbc.CustomerAcctMgt.entity.Customer;
+import com.hsbc.CustomerAcctMgt.exception.DuplicateEmailException;
+import com.hsbc.CustomerAcctMgt.exception.DuplicatePhoneException;
 import com.hsbc.CustomerAcctMgt.exception.ResourceNotFoundException;
 import com.hsbc.CustomerAcctMgt.mapper.CustomerMapper;
 import com.hsbc.CustomerAcctMgt.repository.CustomerRepository;
@@ -8,6 +10,7 @@ import com.hsbc.CustomerAcctMgt.requestDto.CreateCustomerRequest;
 import com.hsbc.CustomerAcctMgt.responseDto.CustomerResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,7 +21,15 @@ public class CustomerServiceImpl implements CustomerService{
     private final CustomerMapper customerMapper;
 
     @Override
+    @Transactional
     public CustomerResponseDto createCustomer(CreateCustomerRequest request) {
+        if (customerRepository.existsByEmail(request.email())) {
+            throw new DuplicateEmailException("Email already exists");
+        }
+
+        if (customerRepository.existsByPhone(request.phone())) {
+            throw new DuplicatePhoneException("Phone number already exists");
+        }
         Customer customerEntity=customerMapper.toEntity(request);
         Customer savedCustomer= customerRepository.save(customerEntity);
         return customerMapper.toDto(savedCustomer);
@@ -40,10 +51,23 @@ public class CustomerServiceImpl implements CustomerService{
     }
 
     @Override
+    @Transactional
     public CustomerResponseDto updateCustomer(Long customerId, CreateCustomerRequest request) {
         //1.find customer
         Customer customerEntity= customerRepository.findById(customerId)
                 .orElseThrow(()-> new ResourceNotFoundException("Customer Not Found"));
+        // Email uniqueness check
+        if (!customerEntity.getEmail().equals(request.email()) &&
+                customerRepository.existsByEmail(request.email())) {
+            throw new DuplicateEmailException("Email already exists");
+        }
+
+        // Phone uniqueness check
+        if (!customerEntity.getPhone().equals(request.phone()) &&
+                customerRepository.existsByPhone(request.phone())) {
+            throw new DuplicatePhoneException("Phone number already exists");
+        }
+
         customerEntity.setName(request.name());
         customerEntity.setEmail(request.email());
         customerEntity.setPhone(request.phone());
@@ -52,6 +76,7 @@ public class CustomerServiceImpl implements CustomerService{
     }
 
     @Override
+    @Transactional
     public void deleteCustomer(Long customerId) {
         Customer customerEntity= customerRepository.findById(customerId)
                 .orElseThrow(()-> new ResourceNotFoundException("Customer Not Found"));
