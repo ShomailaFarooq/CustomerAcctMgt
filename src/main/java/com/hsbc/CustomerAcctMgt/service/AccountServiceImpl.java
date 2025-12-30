@@ -10,8 +10,10 @@ import com.hsbc.CustomerAcctMgt.repository.CustomerRepository;
 import com.hsbc.CustomerAcctMgt.requestDto.CreateAccountRequest;
 import com.hsbc.CustomerAcctMgt.requestDto.UpdateAccountRequest;
 import com.hsbc.CustomerAcctMgt.responseDto.AccountResponseDto;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +26,7 @@ public class AccountServiceImpl implements AccountService{
     private final CustomerRepository customerRepository;
 
     @Override
+    @Transactional
     public AccountResponseDto createAccount(CreateAccountRequest request) {
         // 1. Validate customer exists
         Customer customer= customerRepository.findById(request.customerId())
@@ -34,6 +37,7 @@ public class AccountServiceImpl implements AccountService{
         account.setCreatedAt(LocalDateTime.now());
         account.setStatus(AccountStatus.ACTIVE);
         // 4. Save
+        System.out.println("DEBUG: account.id before save = " + account.getId());
         Account savedAccount = accountRepository.save(account);
         // 5. Convert to response DTO
         return accountMapper.toDto(savedAccount);
@@ -55,6 +59,7 @@ public class AccountServiceImpl implements AccountService{
     }
 
     @Override
+    @Transactional
     public AccountResponseDto updateAccount(Long accountId, UpdateAccountRequest request) {
         // 1. Fetch existing account
         Account account = accountRepository.findById(accountId)
@@ -64,6 +69,7 @@ public class AccountServiceImpl implements AccountService{
         accountMapper.updateEntityFromRequest(request, account);
 
         // 3. Save updated entity
+        System.out.println("DEBUG: account.id before save = " + account.getId());
         Account updated = accountRepository.save(account);
 
         // 4. Convert to response DTO
@@ -79,6 +85,7 @@ public class AccountServiceImpl implements AccountService{
     }
 
     @Override
+    @Transactional
     public void deleteAccount(Long accountId) {
         Account account= accountRepository.findById(accountId)
                 .orElseThrow(()->new ResourceNotFoundException("Account not found"));

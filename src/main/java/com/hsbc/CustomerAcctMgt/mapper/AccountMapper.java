@@ -38,6 +38,7 @@ public interface AccountMapper {
 //    AccountResponseDto toDto(Account account);
 
     // Create Account: request + customer → entity
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "customer", source = "customer")
     @Mapping(target = "accountType", source = "request.accountType")
     @Mapping(target = "accountBalance", source = "request.initialBalance")

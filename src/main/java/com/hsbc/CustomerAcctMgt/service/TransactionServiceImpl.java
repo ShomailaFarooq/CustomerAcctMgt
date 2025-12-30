@@ -8,9 +8,10 @@ import com.hsbc.CustomerAcctMgt.mapper.TransactionMapper;
 import com.hsbc.CustomerAcctMgt.repository.AccountRepository;
 import com.hsbc.CustomerAcctMgt.repository.TransactionRepository;
 import com.hsbc.CustomerAcctMgt.responseDto.TransactionResponseDto;
-import jakarta.transaction.Transactional;
+
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,6 +54,7 @@ public class TransactionServiceImpl implements TransactionService{
     }
 
     @Override
+    @Transactional
     public TransactionResponseDto withdraw(Long accountId, double amount) {
         if(amount<=0){
             throw new IllegalArgumentException("Withdraw amount must be greater than zero");
@@ -121,7 +123,7 @@ public class TransactionServiceImpl implements TransactionService{
 
     @Override
     public List<TransactionResponseDto> getTransactionsByAccountId(Long accountId) {
-        return transactionRepository.findById(accountId)
+        return transactionRepository.findByAccountId(accountId)
                 .stream()
                 .map(transactionMapper::toDto)
                 .toList();
