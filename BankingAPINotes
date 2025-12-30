@@ -1,0 +1,181 @@
+3. Domain model (conceptual)
+3.1 Entities
+- Customer
+- id
+- name
+- email
+- phone
+- createdAt
+- Account
+- id
+- customer (ManyToOne → Customer)
+- accountType (enum: SAVINGS, CURRENT, etc.)
+- accountBalance
+- createdAt
+- Transaction
+- id
+- account (ManyToOne → Account)
+- amount
+- transactionType (enum: DEPOSIT, WITHDRAW, TRANSFER)
+- createdAt
+3.2 Relationships
+- One Customer → Many Accounts
+- One Account → Many Transactions
+
+4. DTO design rules
+4.1 Core rules
+- Entities = DB structure. Never exposed directly via API.
+- DTOs = API structure. No JPA annotations.
+- Request DTOs = client → server, must have validation.
+- Response DTOs = server → client, no validation.
+- DTOs should use IDs instead of full entity objects.
+- Example: Long customerId instead of Customer customer.
+4.2 Request DTOs (records, validated)
+Package: requestDto
+- CreateCustomerRequest
+- name: required, not blank
+- email: required, valid email
+- phone: required, numeric pattern
+- CreateAccountRequest
+- customerId: required
+- accountType: required
+- initialBalance: ≥ 0
+- DepositRequest
+- accountId: required
+- amount: > 0
+- WithdrawRequest
+- accountId: required
+- amount: > 0
+- TransferRequest
+- fromAccountId: required
+- toAccountId: required
+- amount: > 0
+4.3 Response DTOs (records, no validation)
+Package: responseDto
+- CustomerDto
+- id
+- name
+- email
+- phone
+- createdAt
+- AccountDto
+- id
+- customerId
+- accountType
+- accountBalance
+- createdAt
+- TransactionDto
+- id
+- amount
+- accountId
+- transactionType
+- createdAt
+4.4 Mental model
+- Request DTOs = verbs (actions)
+- CreateCustomerRequest, DepositRequest, WithdrawRequest, TransferRequest
+- Response DTOs = nouns (data)
+- CustomerDto, AccountDto, TransactionDto
+- Validation only on request DTOs because client input is untrusted.
+- Response DTOs represent your own system’s output; they don’t need validation.
+
+5. Mapping strategy
+Use MapStruct (preferred) or manual mapping.
+Package: mapper
+Examples (interface only):
+- CustomerMapper
+- CustomerDto toDto(Customer entity)
+- Customer toEntity(CreateCustomerRequest request)
+- AccountMapper
+- AccountDto toDto(Account entity)
+- Account toEntity(CreateAccountRequest request, Customer customer)
+- TransactionMapper
+- TransactionDto toDto(Transaction entity)
+Mapping rules:
+- Entities refer to other entities (Customer, Account).
+- DTOs refer to IDs (customerId, accountId).
+- Services handle joining entities (e.g., find Customer, then create Account).
+
+6. Service layer responsibilities
+Package: service and service.impl
+Keep business logic inside services, not controllers.
+6.1 CustomerService
+- createCustomer(CreateCustomerRequest request): CustomerDto
+- getCustomerById(Long id): CustomerDto
+6.2 AccountService
+- createAccount(CreateAccountRequest request): AccountDto
+- getAccountById(Long id): AccountDto
+- getAccountsByCustomerId(Long customerId): List<AccountDto>
+6.3 TransactionService
+- deposit(DepositRequest request): TransactionDto
+- withdraw(WithdrawRequest request): TransactionDto
+- transfer(TransferRequest request): TransactionDto
+- getTransactionsByAccountId(Long accountId): List<TransactionDto>
+Key rules:
+- Service = enforce business rules.
+- Check account existence, balance, ownership, etc.
+- Throw domain exceptions like InsufficientBalanceException.
+
+7. Controller layer design
+Package: controller
+Controllers should be thin:
+- Accept request DTOs (@RequestBody).
+- Call service methods.
+- Return response DTOs (ResponseEntity<...>).
+- No business rules, only orchestration.
+Example endpoints:
+- CustomerController
+- POST /customers → createCustomer
+- GET /customers/{id} → getCustomer
+- AccountController
+- POST /accounts → createAccount
+- GET /accounts/{id} → getAccount
+- GET /customers/{customerId}/accounts → get accounts by customer
+- TransactionController
+- POST /transactions/deposit → deposit
+- POST /transactions/withdraw → withdraw
+- POST /transactions/transfer → transfer
+- GET /accounts/{accountId}/transactions → get transactions for account
+
+8. Validation flow
+- @Valid on controller methods for request DTOs.
+- Bean Validation annotations in request DTOs only.
+- On validation failure: global exception handler converts errors into a clean error response.
+Example:
+@PostMapping("/customers")
+public ResponseEntity<CustomerDto> createCustomer(
+        @Valid @RequestBody CreateCustomerRequest request) {
+    return ResponseEntity.ok(customerService.createCustomer(request));
+}
+
+
+
+9. Exception handling
+Package: exception
+- Custom exceptions
+- ResourceNotFoundException
+- InsufficientBalanceException
+- BusinessRuleException (if needed)
+- GlobalExceptionHandler
+- Annotated with @ControllerAdvice
+- Handles:
+- Entity not found
+- Insufficient balance
+- Validation errors (MethodArgumentNotValidException)
+- Returns consistent error response structure (e.g. timestamp, message, details, path)
+
+10. Swagger / OpenAPI
+Package: config
+- Enable OpenAPI/Swagger for:
+- Visualizing endpoints
+- Trying requests (POST/GET)
+- Showing request and response models
+Nice for:
+- Interviews (demo)
+- Internal testing
+
+11. Mental models and memory tricks
+- Entities for DB. Records for API.
+- Request = Validate. Response = Don’t validate.
+- Request = actions (verbs). Response = data (nouns).
+- DTOs never contain entities; they contain IDs.
+- Controllers are thin. Services are smart. Repositories are dumb.

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Banking API Tester</title>
+
+  <style>
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        margin: 0;
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        min-height: 100vh;
+    }
+
+    header {
+        background: #0d47a1;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        font-size: 26px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    nav {
+        display: flex;
+        background: #1565c0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    nav a {
+        padding: 15px 20px;
+        color: white;
+        text-decoration: none;
+        flex: 1;
+        text-align: center;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.3s ease;
+    }
+
+    nav a:hover {
+        background: #0d47a1;
+    }
+
+    .container {
+        padding: 25px;
+        max-width: 1100px;
+        margin: auto;
+    }
+
+    .page {
+        display: none;
+        animation: fadeIn 0.4s ease;
+    }
+
+    .active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section {
+        background: white;
+        padding: 20px;
+        margin-bottom: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        border-left: 5px solid #1565c0;
+    }
+
+    h2 {
+        color: #0d47a1;
+        margin-bottom: 15px;
+    }
+
+    h3 {
+        color: #1565c0;
+        margin-bottom: 10px;
+    }
+
+    label {
+        display: block;
+        margin-top: 12px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    input, select {
+        width: 300px;
+        padding: 8px;
+        margin-top: 4px;
+        border-radius: 6px;
+        border: 1px solid #bbb;
+        transition: border 0.2s ease;
+    }
+
+    input:focus, select:focus {
+        border-color: #1565c0;
+        outline: none;
+        box-shadow: 0 0 4px rgba(21,101,192,0.4);
+    }
+
+    button {
+        margin-top: 15px;
+        padding: 10px 18px;
+        background: #1565c0;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 15px;
+        transition: background 0.3s ease, transform 0.1s ease;
+    }
+
+    button:hover {
+        background: #0d47a1;
+    }
+
+    button:active {
+        transform: scale(0.97);
+    }
+
+    textarea {
+        width: 100%;
+        height: 220px;
+        margin-top: 10px;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #aaa;
+        font-family: monospace;
+        background: #fafafa;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+
+<body>
+
+<header>Banking API Tester</header>
+
+<nav>
+  <a onclick="navigate('customers')">Customers</a>
+  <a onclick="navigate('accounts')">Accounts</a>
+  <a onclick="navigate('transactions')">Transactions</a>
+</nav>
+
+<div class="container">
+
+  <!-- CUSTOMERS PAGE -->
+  <div id="customers" class="page active">
+    <h2>Customer Operations</h2>
+
+    <div class="section">
+      <h3>Create Customer</h3>
+      <label>Name</label><input id="custName">
+      <label>Email</label><input id="custEmail">
+      <label>Phone</label><input id="custPhone">
+      <button onclick="createCustomer()">Create</button>
+    </div>
+
+    <div class="section">
+      <h3>Get Customer</h3>
+      <label>ID</label><input id="custIdGet">
+      <button onclick="getCustomer()">Fetch</button>
+    </div>
+
+    <div class="section">
+      <h3>All Customers</h3>
+      <button onclick="getAllCustomers()">Fetch All</button>
+    </div>
+
+    <div class="section">
+      <h3>Delete Customer</h3>
+      <label>Customer ID</label><input id="custIdDelete">
+      <button onclick="deleteCustomer()">Delete</button>
+    </div>
+  </div>
+
+  <!-- ACCOUNTS PAGE -->
+  <div id="accounts" class="page">
+    <h2>Account Operations</h2>
+
+    <div class="section">
+      <h3>Create Account</h3>
+      <label>Customer ID</label><input id="accCustomerId">
+
+      <label>Account Type</label>
+      <select id="accType">
+        <option value="SAVINGS">Savings</option>
+        <option value="CURRENT">Current</option>
+        <option value="CHECKING">Checking</option>
+        <option value="FIXED_DEPOSIT">Fixed Deposit</option>
+      </select>
+
+      <label>Initial Balance</label><input id="accInitialBalance">
+      <button onclick="createAccount()">Create</button>
+    </div>
+
+    <div class="section">
+      <h3>Get Account</h3>
+      <label>ID</label><input id="accIdGet">
+      <button onclick="getAccount()">Fetch</button>
+    </div>
+
+    <div class="section">
+      <h3>Accounts by Customer</h3>
+      <label>Customer ID</label><input id="accCustomerIdGet">
+      <button onclick="getAccountsByCustomer()">Fetch</button>
+    </div>
+
+    <div class="section">
+      <h3>Delete Account</h3>
+      <label>Account ID</label><input id="accIdDelete">
+      <button onclick="deleteAccount()">Delete</button>
+    </div>
+  </div>
+
+  <!-- TRANSACTIONS PAGE -->
+  <div id="transactions" class="page">
+    <h2>Transaction Operations</h2>
+
+    <div class="section">
+      <h3>Select Transaction Type</h3>
+      <label>Transaction Type</label>
+      <select id="txnType" onchange="switchTransactionType()">
+        <option value="deposit">Deposit</option>
+        <option value="withdraw">Withdraw</option>
+        <option value="transfer">Transfer</option>
+      </select>
+    </div>
+
+    <div id="depositSection" class="section">
+      <h3>Deposit</h3>
+      <label>Account ID</label><input id="depAccId">
+      <label>Amount</label><input id="depAmount">
+      <button onclick="deposit()">Deposit</button>
+    </div>
+
+    <div id="withdrawSection" class="section" style="display:none;">
+      <h3>Withdraw</h3>
+      <label>Account ID</label><input id="withAccId">
+      <label>Amount</label><input id="withAmount">
+      <button onclick="withdraw()">Withdraw</button>
+    </div>
+
+    <div id="transferSection" class="section" style="display:none;">
+      <h3>Transfer</h3>
+      <label>From Account</label><input id="fromAccId">
+      <label>To Account</label><input id="toAccId">
+      <label>Amount</label><input id="transAmount">
+      <button onclick="transfer()">Transfer</button>
+    </div>
+
+    <div class="section">
+      <h3>Transaction History</h3>
+      <label>Account ID</label><input id="txAccId">
+      <button onclick="getTransactions()">Fetch</button>
+    </div>
+  </div>
+
+  <!-- RESPONSE AREA -->
+  <div class="section">
+    <h3>Response</h3>
+    <textarea id="responseArea" readonly></textarea>
+  </div>
+
+</div>
+
+<script>
+  const BASE = "http://localhost:8080";
+
+  function navigate(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(page).classList.add('active');
+      location.hash = page;
+  }
+
+  window.onload = () => {
+      if (location.hash) navigate(location.hash.substring(1));
+  };
+
+  function showResponse(data) {
+      document.getElementById('responseArea').value =
+          typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+  }
+
+  // CUSTOMER FUNCTIONS
+  async function createCustomer() {
+      const body = {
+          name: custName.value,
+          email: custEmail.value,
+          phone: custPhone.value
+      };
+      const res = await fetch(BASE + "/bank/customers", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(body)
+      });
+      showResponse(await res.json());
+  }
+
+  async function getCustomer() {
+      const res = await fetch(BASE + "/bank/customers/" + custIdGet.value);
+      showResponse(await res.json());
+  }
+
+  async function getAllCustomers() {
+      const res = await fetch(BASE + "/bank/customers");
+      showResponse(await res.json());
+  }
+
+  async function deleteCustomer() {
+      const res = await fetch(BASE + "/bank/customers/" + custIdDelete.value, {
+          method: "DELETE"
+      });
+      showResponse("Status: " + res.status + " (Customer Deleted)");
+  }
+
+  // ACCOUNT FUNCTIONS
+  async function createAccount() {
+      const body = {
+          customerId: Number(accCustomerId.value),
+          accountType: accType.value,
+          initialBalance: Number(accInitialBalance.value)
+      };
+      const res = await fetch(BASE + "/bank/accounts", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(body)
+      });
+      showResponse(await res.json());
+  }
+
+  async function getAccount() {
+      const res = await fetch(BASE + "/bank/accounts/" + accIdGet.value);
+      showResponse(await res.json());
+  }
+
+  async function getAccountsByCustomer() {
+      const res = await fetch(BASE + "/bank/accounts/customer/" + accCustomerIdGet.value);
+      showResponse(await res.json());
+  }
+
+  async function deleteAccount() {
+      const res = await fetch(BASE + "/bank/accounts/" + accIdDelete.value, {
+          method: "DELETE"
+      });
+      showResponse("Status: " + res.status + " (Account Deleted)");
+  }
+
+  // TRANSACTION FUNCTIONS
+  function switchTransactionType() {
+      const type = txnType.value;
+
+      depositSection.style.display = type === "deposit" ? "block" : "none";
+      withdrawSection.style.display = type === "withdraw" ? "block" : "none";
+      transferSection.style.display = type === "transfer" ? "block" : "none";
+  }
+
+  async function deposit() {
+      const res = await fetch(BASE + `/bank/transactions/deposit?accountId=${depAccId.value}&amount=${depAmount.value}`, {
+          method: "POST"
+      });
+      showResponse(await res.json());
+  }
+
+  async function withdraw() {
+      const res = await fetch(BASE + `/bank/transactions/withdraw?accountId=${withAccId.value}&amount=${withAmount.value}`, {
+          method: "POST"
+      });
+      showResponse(await res.json());
+  }
+
+  async function transfer() {
+      const res = await fetch(BASE + `/bank/transactions/transfer?fromAccountId=${fromAccId.value}&toAccountId=${toAccId.value}&amount=${transAmount.value}`, {
+          method: "POST"
+      });
+      showResponse(await res.json());
+  }
+
+  async function getTransactions() {
+      const res = await fetch(BASE + "/bank/transactions/account/" + txAccId.value);
+      showResponse(await res.json());
+  }
+</script>
+
+</body>
+</html>

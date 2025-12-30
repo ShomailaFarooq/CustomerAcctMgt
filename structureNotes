@@ -1,0 +1,53 @@
+entity-->repository-->request&responseDto-->Mappers
+
+com.bank (or com.hsbc.CustomerAcctMgt)
+│
+├── controller
+│     ├── CustomerController.java
+│     ├── AccountController.java
+│     └── TransactionController.java
+│
+├── service
+│     ├── CustomerService.java
+│     ├── AccountService.java
+│     └── TransactionService.java
+│
+├── service.impl
+│     ├── CustomerServiceImpl.java
+│     ├── AccountServiceImpl.java
+│     └── TransactionServiceImpl.java
+│
+├── entity
+│     ├── Customer.java
+│     ├── Account.java
+│     └── Transaction.java
+│
+├── repository
+│     ├── CustomerRepository.java
+│     ├── AccountRepository.java
+│     └── TransactionRepository.java
+│
+├── requestDto
+│     ├── CreateCustomerRequest.java
+│     ├── CreateAccountRequest.java
+│     ├── DepositRequest.java
+│     ├── WithdrawRequest.java
+│     └── TransferRequest.java
+│
+├── responseDto
+│     ├── CustomerDto.java
+│     ├── AccountDto.java
+│     └── TransactionDto.java
+│
+├── mapper
+│     ├── CustomerMapper.java
+│     ├── AccountMapper.java
+│     └── TransactionMapper.java
+│
+├── exception
+│     ├── GlobalExceptionHandler.java
+│     ├── ResourceNotFoundException.java
+│     └── InsufficientBalanceException.java
+│
+└── config
+      └── SwaggerConfig.java

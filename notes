@@ -1,0 +1,36 @@
+BANKING API BLUEPRINT
+
+1. Core Entities:
+   - Customer
+   - Account
+   - Transaction
+
+2. Core Operations:
+   - Create Customer
+   - Create Account
+   - Deposit
+   - Withdraw
+   - Transfer
+
+3. Layers:
+   - controller
+   - service + service.impl
+   - repository
+   - entity
+   - requestDto (validated)
+   - responseDto (clean)
+   - mapper
+   - exception
+   - config
+
+4. Rules:
+   - Entities = DB structure
+   - Request DTO = validate
+   - Response DTO = no validation
+   - DTOs never contain entities
+   - Use IDs instead of objects
+   - Business logic stays in service layer
+   - Controllers stay thin
+   - Use MapStruct for mapping
+   - Add global exception handling
+   - Add Swagger for documentation
