@@ -9,9 +9,13 @@ import com.hsbc.CustomerAcctMgt.repository.CustomerRepository;
 import com.hsbc.CustomerAcctMgt.requestDto.CreateCustomerRequest;
 import com.hsbc.CustomerAcctMgt.responseDto.CustomerResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.slf4j.Logger;
 import java.util.List;
 
 @Service
@@ -19,6 +23,7 @@ import java.util.List;
 public class CustomerServiceImpl implements CustomerService{
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
+    private static final Logger log = LoggerFactory.getLogger(CustomerService.class);
 
     @Override
     @Transactional
@@ -43,13 +48,16 @@ public class CustomerServiceImpl implements CustomerService{
                 .toList();
     }
 
+    @Cacheable(value = "customers", key = "#id")
     @Override
     public CustomerResponseDto getCustomerById(Long customerId) {
+        log.info("Fetching customer {} from DB", customerId);
         Customer customerEntity= customerRepository.findById(customerId)
                 .orElseThrow(()-> new ResourceNotFoundException("Customer Not Found"));
         return customerMapper.toDto(customerEntity);
     }
 
+    @CachePut
     @Override
     @Transactional
     public CustomerResponseDto updateCustomer(Long customerId, CreateCustomerRequest request) {
@@ -75,6 +83,7 @@ public class CustomerServiceImpl implements CustomerService{
         return customerMapper.toDto(updatedEntity);
     }
 
+    @CacheEvict
     @Override
     @Transactional
     public void deleteCustomer(Long customerId) {
